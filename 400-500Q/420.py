@@ -1,0 +1,34 @@
+class Solution:
+    def strongPasswordChecker(self, password: str) -> int:
+        
+        unique_chars = set(password)
+        password_length = len(password)
+
+        
+        required_categories = 3 - (bool(unique_chars & set(ascii_lowercase)) + 
+                                   bool(unique_chars & set(ascii_uppercase)) +
+                                   bool(unique_chars & set('0123456789')))
+
+        
+        if password_length < 6:
+            return max(6 - password_length, required_categories)
+
+        
+        consecutive_repeats = [len(list(g)) for _, g in groupby(password)]
+        long_repeats = [length for length in consecutive_repeats if length > 2]
+
+        
+        if password_length > 20:
+            
+            long_repeats = [(length % 3, length) for length in long_repeats]
+            heapify(long_repeats)
+            for _ in range(password_length - 20):
+                if not long_repeats:
+                    break
+                _, length = heappop(long_repeats)
+                if length > 3:
+                    heappush(long_repeats, ((length - 1) % 3, length - 1))
+            long_repeats = [length for _, length in long_repeats]
+
+       
+        return max(required_categories, sum(length // 3 for length in long_repeats)) + max(0, password_length - 20)
